@@ -23,23 +23,7 @@ app = FastAPI(
 # 서버 시작 시 샘플 데이터 적재
 @app.on_event("startup")
 def startup_event():
-    try:
-        if not vdb.documents:
-            vdb.add_document(
-                "LangGraph는 LangChain에서 만든 LLM 에이전트 및 멀티 에이전트 협업 시스템 구축을 위한 프레임워크입니다. 상태(State)를 보존하고 순환 그래프(Cyclic Graph) 구조를 지원하는 것이 핵심 특징입니다.",
-                "LangGraph 공식문서"
-            )
-            vdb.add_document(
-                "자가 수정 RAG(Corrective RAG)는 검색된 문서의 적합성을 스스로 판별하여 무의미한 문서일 경우 웹 검색을 통해 보완하고, 생성된 답변의 환각을 재평가하는 RAG 아키텍처입니다.",
-                "RAG 논문 요약"
-            )
-            vdb.add_document(
-                "한양대학교의 2026년 기말 프로젝트 제출 기한은 6월 중순이며, 보고서는 5페이지 이상으로 제출해야 합니다. LangChain/LangGraph 에이전트 소스코드도 함께 포함되어야 합니다.",
-                "과제 공지사항"
-            )
-            print("[Startup] RAG 시각화용 샘플 문서 3건 임베딩 완료.")
-    except Exception as e:
-        print(f"[Startup Error] 샘플 문서 적재 중 에러 발생: {str(e)}")
+    print("[Startup] RAG 시각화용 벡터 DB가 비어있는 상태로 시작되었습니다.")
 
 # CORS 설정 (외부 자바스크립트 클라이언트 및 웹 UI 연동 허용)
 app.add_middleware(

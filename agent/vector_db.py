@@ -11,7 +11,7 @@ class MemoryVectorDB:
         self.documents = []
         api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
         self.embeddings_model = GoogleGenerativeAIEmbeddings(
-            model="models/text-embedding-004",
+            model="models/gemini-embedding-001",
             google_api_key=api_key
         )
 

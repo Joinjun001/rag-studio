@@ -479,8 +479,14 @@
                 </div>
                 
                 <div class="input-group">
-                    <label>원래 서류 내용 (Text / Document)</label>
-                    <textarea id="docInput" placeholder="여기에 학습시킬 문서를 입력하거나 파일을 복사해 주세요..."></textarea>
+                    <label style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <span>원래 서류 내용 (Text / Document)</span>
+                        <span style="color: #818cf8; cursor: pointer; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600;" onclick="document.getElementById('fileInput').click()">
+                            <i class="fa-solid fa-paperclip"></i> 파일 선택 (.txt, .md)
+                        </span>
+                    </label>
+                    <input type="file" id="fileInput" accept=".txt,.md" style="display: none;" onchange="handleFileUpload(event)">
+                    <textarea id="docInput" placeholder="여기에 학습시킬 문서를 입력하거나 파일을 업로드/복사해 주세요..."></textarea>
                 </div>
 
                 <div class="flex-row">
@@ -679,6 +685,18 @@
             const overlap = document.getElementById('chunkOverlap').value;
             document.getElementById('chunkSizeVal').innerText = `${size}자`;
             document.getElementById('chunkOverlapVal').innerText = `${overlap}자`;
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('docInput').value = e.target.result;
+                simulateChunking();
+            };
+            reader.readAsText(file);
         }
 
         // Simulates document chunking logic in the frontend
