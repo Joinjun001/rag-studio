@@ -3,28 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Antigravity Adaptive RAG Agent</title>
+    <title>RAG & Vector DB Visualization Lab</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome for Premium Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for 2D Scatter Plot -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         :root {
-            --bg-primary: #030712;
-            --bg-secondary: #0b1528;
+            --bg-primary: #080B16;
+            --bg-secondary: #0f162e;
             --accent-primary: #6366f1;
             --accent-secondary: #3b82f6;
             --accent-glow: rgba(99, 102, 241, 0.15);
             --text-main: #f3f4f6;
             --text-muted: #9ca3af;
             --border-color: rgba(255, 255, 255, 0.08);
-            --card-bg: rgba(15, 23, 42, 0.6);
+            --card-bg: rgba(15, 23, 42, 0.7);
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
+            --purple: #8b5cf6;
         }
 
         * {
@@ -38,8 +41,8 @@
         body {
             background-color: var(--bg-primary);
             background-image: 
-                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 40%);
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 45%),
+                radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 45%);
             color: var(--text-main);
             min-height: 100vh;
             display: flex;
@@ -51,9 +54,9 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1.5rem 2rem;
+            padding: 1.25rem 2rem;
             border-bottom: 1px solid var(--border-color);
-            background: rgba(3, 7, 18, 0.8);
+            background: rgba(8, 11, 22, 0.85);
             backdrop-filter: blur(12px);
             position: sticky;
             top: 0;
@@ -66,7 +69,7 @@
             gap: 0.75rem;
             font-size: 1.5rem;
             font-weight: 700;
-            background: linear-gradient(135deg, #a5b4fc, #60a5fa);
+            background: linear-gradient(135deg, #c7d2fe, #86b9ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -99,28 +102,28 @@
             border-radius: 50%;
             display: inline-block;
             box-shadow: 0 0 8px var(--success);
-            animation: pulse 2s infinite;
+            animation: pulse-green 2s infinite;
         }
 
         main {
             flex: 1;
-            max-width: 1200px;
+            max-width: 1400px;
             width: 100%;
             margin: 2rem auto;
             padding: 0 1.5rem;
             display: grid;
-            grid-template-columns: 1.1fr 0.9fr;
+            grid-template-columns: 380px 1fr;
             gap: 2rem;
         }
 
-        @media (max-width: 968px) {
+        @media (max-width: 1100px) {
             main {
                 grid-template-columns: 1fr;
             }
         }
 
         .section-title {
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             font-weight: 600;
             margin-bottom: 1rem;
             color: var(--text-main);
@@ -133,311 +136,323 @@
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 16px;
-            padding: 1.75rem;
+            padding: 1.5rem;
             backdrop-filter: blur(16px);
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
-            transition: transform 0.3s ease, border-color 0.3s ease;
+            gap: 1.25rem;
         }
 
-        .card:hover {
-            border-color: rgba(99, 102, 241, 0.2);
-        }
-
+        /* Forms & Controls */
         .input-group {
-            position: relative;
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
         }
 
-        textarea {
+        label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        label span.val {
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        textarea, input[type="text"] {
             width: 100%;
-            min-height: 120px;
-            background: rgba(3, 7, 18, 0.6);
+            background: rgba(3, 7, 18, 0.7);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1rem;
+            border-radius: 10px;
+            padding: 0.75rem;
             color: var(--text-main);
-            font-size: 1rem;
-            resize: vertical;
+            font-size: 0.9rem;
             transition: all 0.3s ease;
         }
 
-        textarea:focus {
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        textarea:focus, input[type="text"]:focus {
             outline: none;
             border-color: var(--accent-primary);
             box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
-        .btn-submit {
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent-primary);
+            cursor: pointer;
+        }
+
+        .btn {
             background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             color: white;
             border: none;
-            padding: 0.85rem 1.5rem;
-            border-radius: 10px;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
-            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
         }
 
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
         }
 
-        .btn-submit:active {
-            transform: translateY(0);
-        }
-
-        .btn-submit:disabled {
-            background: #374151;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .samples {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .samples-title {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--text-muted);
-        }
-
-        .sample-item {
-            background: rgba(255, 255, 255, 0.03);
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            font-size: 0.875rem;
-            color: #d1d5db;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: left;
-        }
-
-        .sample-item:hover {
-            background: rgba(99, 102, 241, 0.08);
-            border-color: rgba(99, 102, 241, 0.3);
             color: var(--text-main);
         }
 
-        /* Console styling for agent logs */
-        .console {
-            background: #020617;
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: none;
+            transform: none;
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        }
+
+        /* Chunking visual representation */
+        .chunk-visualizer {
+            background: rgba(3, 7, 18, 0.5);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1rem;
-            font-family: 'JetBrains Mono', monospace;
+            border-radius: 10px;
+            padding: 0.75rem;
             font-size: 0.85rem;
-            color: #10b981;
-            min-height: 180px;
-            max-height: 250px;
+            max-height: 180px;
             overflow-y: auto;
             display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .console-line {
-            line-height: 1.4;
-        }
-
-        .console-line.system { color: #64748b; }
-        .console-line.node { color: #60a5fa; }
-        .console-line.edge { color: #f59e0b; }
-        .console-line.success { color: #10b981; }
-        .console-line.warning { color: #f43f5e; }
-
-        /* Output Column Styling */
-        .output-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 1.75rem;
-            backdrop-filter: blur(16px);
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            min-height: 520px;
-        }
-
-        .meta-badges {
-            display: flex;
-            gap: 0.75rem;
             flex-wrap: wrap;
-        }
-
-        .meta-badge {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 0.4rem 0.75rem;
-            font-size: 0.8rem;
-            color: #e5e7eb;
-            display: flex;
-            align-items: center;
             gap: 0.5rem;
         }
 
-        .meta-badge i {
-            color: var(--accent-primary);
+        .chunk-block {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            color: white;
+            font-weight: 500;
+            display: inline-block;
+            font-size: 0.8rem;
+            cursor: help;
         }
 
-        .answer-area {
-            flex: 1;
+        /* Vector Space Chart Card */
+        .chart-container {
+            position: relative;
+            height: 380px;
+            width: 100%;
             background: rgba(3, 7, 18, 0.4);
             border: 1px solid var(--border-color);
             border-radius: 12px;
+            padding: 1rem;
+        }
+
+        /* RAG Flow Pipeline Inspector */
+        .pipeline {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .step-card {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
             padding: 1.25rem;
-            line-height: 1.6;
-            color: #e5e7eb;
-            font-size: 0.95rem;
-            overflow-y: auto;
-            white-space: pre-line;
-            position: relative;
-        }
-
-        .answer-placeholder {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: var(--text-muted);
-            gap: 1rem;
-            text-align: center;
-            padding: 2rem 0;
-        }
-
-        .answer-placeholder i {
-            font-size: 3rem;
-            color: rgba(99, 102, 241, 0.2);
-        }
-
-        .sources-title {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text-main);
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 0.5rem;
-            margin-top: 0.5rem;
-        }
-
-        .source-list {
             display: flex;
             flex-direction: column;
             gap: 0.75rem;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #a5b4fc;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .step-number {
+            background: var(--accent-primary);
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+
+        /* Code/Vector blocks */
+        .vector-raw {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.75rem;
+            background: #020617;
+            padding: 0.75rem;
+            border-radius: 8px;
+            color: #34d399;
+            overflow-x: auto;
+            max-height: 80px;
+            white-space: pre-wrap;
+            border: 1px solid rgba(16, 185, 129, 0.1);
+        }
+
+        .prompt-raw {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            background: #020617;
+            padding: 0.75rem;
+            border-radius: 8px;
+            color: #93c5fd;
+            overflow-y: auto;
+            max-height: 120px;
+            white-space: pre-wrap;
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            line-height: 1.4;
+        }
+
+        /* Similarity Table */
+        .similarity-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            text-align: left;
+        }
+
+        .similarity-table th, .similarity-table td {
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .similarity-table th {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .similarity-table td.sim-score {
+            font-weight: 600;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .score-high { color: var(--success); }
+        .score-medium { color: var(--warning); }
+        .score-low { color: var(--text-muted); }
+
+        /* Documents List view */
+        .doc-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
             max-height: 200px;
             overflow-y: auto;
         }
 
-        .source-item {
+        .doc-item {
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 0.75rem;
-            font-size: 0.825rem;
-        }
-
-        .source-item-header {
+            padding: 0.6rem 0.75rem;
+            font-size: 0.8rem;
             display: flex;
             justify-content: space-between;
-            color: var(--accent-primary);
-            font-weight: 500;
-            margin-bottom: 0.35rem;
-        }
-
-        .source-item-content {
-            color: #9ca3af;
-            line-height: 1.4;
-        }
-
-        .btn-copy {
-            position: absolute;
-            top: 0.75rem;
-            right: 0.75rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            cursor: pointer;
-            display: flex;
             align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
         }
 
-        .btn-copy:hover {
-            background: rgba(99, 102, 241, 0.15);
-            color: var(--text-main);
-            border-color: var(--accent-primary);
+        .doc-item-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 260px;
         }
 
-        footer {
-            text-align: center;
-            padding: 2rem;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            border-top: 1px solid var(--border-color);
-            background: rgba(3, 7, 18, 0.4);
-            margin-top: auto;
+        .doc-item-source {
+            font-size: 0.7rem;
+            background: rgba(99, 102, 241, 0.1);
+            color: #a5b4fc;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            margin-right: 0.5rem;
         }
 
-        /* Loading spinner */
-        .spinner {
-            border: 3px solid rgba(255, 255, 255, 0.05);
-            border-top: 3px solid var(--accent-primary);
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @keyframes pulse {
+        /* Animations */
+        @keyframes pulse-green {
             0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
             70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
             100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
 
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+        .llm-output-area {
+            background: rgba(99, 102, 241, 0.03);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            border-radius: 10px;
+            padding: 1rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #e5e7eb;
+            min-height: 80px;
         }
 
-        ::-webkit-scrollbar-track {
-            background: transparent;
+        .flex-row {
+            display: flex;
+            gap: 1rem;
+            width: 100%;
         }
 
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 9999px;
+        .flex-row > * {
+            flex: 1;
         }
 
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.25);
+        /* Spinner for loading */
+        .loader-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            color: var(--accent-primary);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .spinner {
+            border: 2.5px solid rgba(99, 102, 241, 0.1);
+            border-top: 2.5px solid var(--accent-primary);
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -445,237 +460,572 @@
 
     <header>
         <div class="logo">
-            <i class="fa-solid fa-brain-circuit"></i>
-            <span>Antigravity RAG</span>
+            <i class="fa-solid fa-graduation-cap"></i>
+            <span>RAG & Vector DB Visualization Lab</span>
         </div>
         <div class="badge">
-            Adaptive & Self-Corrective Agent Active
+            Gemini 임베딩 & PCA 엔진 활성화
         </div>
     </header>
 
     <main>
-        <!-- Left Column: Input and Process log -->
-        <div style="display: flex; flex-direction: column; gap: 2rem;">
+        <!-- Left Column: Chunking & Doc adding -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <!-- Document Input and Chunking controls -->
             <div class="card">
                 <div class="section-title">
-                    <i class="fa-regular fa-comment-dots" style="color: var(--accent-primary);"></i>
-                    <span>질문 입력</span>
-                </div>
-                <div class="input-group">
-                    <textarea id="questionInput" placeholder="여기에 질문을 입력해 주세요... (예: LangGraph의 상태와 순환 그래프는 어떤 역할을 하나요?)"></textarea>
-                    <button id="submitBtn" class="btn-submit" onclick="submitQuestion()">
-                        <i class="fa-solid fa-paper-plane"></i>
-                        <span>에이전트 실행</span>
-                    </button>
+                    <i class="fa-solid fa-file-arrow-up" style="color: var(--accent-primary);"></i>
+                    <span>지식 추가 & 청킹 실습 (Chunking)</span>
                 </div>
                 
-                <div class="samples">
-                    <div class="samples-title">💡 추천 질문 클릭하여 실행</div>
-                    <button class="sample-item" onclick="useSample(this)">과제 공지사항에 기재된 기말 프로젝트 보고서의 최소 분량이 몇 페이지인가요?</button>
-                    <button class="sample-item" onclick="useSample(this)">LangGraph의 상태(State)와 순환 그래프 기능에 대해 설명해줘</button>
+                <div class="input-group">
+                    <label>원래 서류 내용 (Text / Document)</label>
+                    <textarea id="docInput" placeholder="여기에 학습시킬 문서를 입력하거나 파일을 복사해 주세요..."></textarea>
+                </div>
+
+                <div class="flex-row">
+                    <div class="input-group">
+                        <label>Chunk Size <span class="val" id="chunkSizeVal">120자</span></label>
+                        <input type="range" id="chunkSize" min="30" max="300" value="120" oninput="updateSliders()">
+                    </div>
+                    <div class="input-group">
+                        <label>Chunk Overlap <span class="val" id="chunkOverlapVal">20자</span></label>
+                        <input type="range" id="chunkOverlap" min="0" max="100" value="20" oninput="updateSliders()">
+                    </div>
+                </div>
+
+                <div class="flex-row">
+                    <button class="btn btn-secondary" onclick="simulateChunking()">
+                        <i class="fa-solid fa-scissors"></i>
+                        <span>분할 시뮬레이션</span>
+                    </button>
+                    <button class="btn" id="importBtn" onclick="importChunks()" disabled>
+                        <i class="fa-solid fa-database"></i>
+                        <span>벡터 DB에 등록</span>
+                    </button>
+                </div>
+
+                <!-- Color coded chunk blocks preview -->
+                <div class="input-group" id="chunkPreviewSection" style="display: none;">
+                    <label>분할된 텍스트 청크 시각화 (Chunks)</label>
+                    <div id="chunkVisuals" class="chunk-visualizer">
+                        <!-- Color-coded chunks will be displayed here -->
+                    </div>
                 </div>
             </div>
 
-            <!-- Agent Thinking Console -->
+            <!-- Vector DB Document List -->
             <div class="card">
-                <div class="section-title">
-                    <i class="fa-solid fa-terminal" style="color: #10b981;"></i>
-                    <span>에이전트 생각 흐름 (Agent Process Logs)</span>
+                <div class="section-title" style="justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-server" style="color: var(--accent-secondary);"></i>
+                        <span>등록된 문서 조각 (<span id="totalDocCount">0</span>)</span>
+                    </div>
+                    <button class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="clearVectorDB()">
+                        <i class="fa-solid fa-trash-can"></i> 전체 비우기
+                    </button>
                 </div>
-                <div id="consoleLog" class="console">
-                    <span class="console-line system">[System] 에이전트 대기 중... 질문을 입력하고 실행 버튼을 눌러주세요.</span>
+                <div class="doc-list" id="docList">
+                    <!-- Added documents will be displayed here -->
                 </div>
             </div>
         </div>
 
-        <!-- Right Column: Final Answer and Sources -->
-        <div class="output-card">
-            <div class="section-title">
-                <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent-secondary);"></i>
-                <span>최종 답변</span>
-            </div>
-
-            <div class="meta-badges">
-                <div class="meta-badge">
-                    <i class="fa-solid fa-arrows-spin"></i>
-                    <span>시도 횟수: <strong id="loopBadge">-</strong></span>
+        <!-- Right Column: Interactive Vector space & RAG Pipeline Flow -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <!-- Interactive 2D Coordinate Space -->
+            <div class="card" style="padding: 1.25rem;">
+                <div class="section-title" style="margin-bottom: 0.5rem;">
+                    <i class="fa-solid fa-circle-nodes" style="color: var(--purple);"></i>
+                    <span>2차원 벡터 스페이스 투영 (Vector Space Visualization - PCA)</span>
                 </div>
-                <div class="meta-badge">
-                    <i class="fa-solid fa-file-invoice"></i>
-                    <span>참조 문서: <strong id="docBadge">-</strong></span>
+                <div class="chart-container">
+                    <canvas id="vectorChart"></canvas>
                 </div>
             </div>
 
-            <div class="answer-area" id="answerArea">
-                <button id="copyBtn" class="btn-copy" onclick="copyToClipboard()" style="display: none;" title="답변 복사">
-                    <i class="fa-regular fa-copy"></i>
-                </button>
-                <div class="answer-placeholder" id="placeholder">
-                    <i class="fa-solid fa-robot"></i>
-                    <p>질문을 실행하면 에이전트가 정보를 탐색하고<br>검증된 답변을 이곳에 출력합니다.</p>
+            <!-- RAG Query & Pipeline -->
+            <div class="card">
+                <div class="section-title">
+                    <i class="fa-regular fa-compass" style="color: var(--success);"></i>
+                    <span>질문 검색 및 RAG 파이프라인 검사 (Pipeline Inspector)</span>
                 </div>
-                <div id="answerContent" style="display: none;"></div>
-            </div>
 
-            <div id="sourcesSection" style="display: none; flex-direction: column; gap: 0.75rem;">
-                <div class="sources-title">
-                    <i class="fa-solid fa-quote-left" style="font-size: 0.8rem; margin-right: 0.25rem;"></i>
-                    참조 정보 출처 (Sources)
+                <div class="input-group" style="flex-direction: row; gap: 0.75rem; align-items: center;">
+                    <input type="text" id="queryInput" placeholder="등록된 지식에 대해 에이전트에게 물어보세요..." style="flex: 1;" onkeydown="if(event.key === 'Enter') executeRAG()">
+                    <button class="btn" style="padding: 0.75rem 1.5rem;" onclick="executeRAG()" id="queryBtn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <span>RAG 검색 & 생성</span>
+                    </button>
                 </div>
-                <div class="source-list" id="sourceList">
-                    <!-- Dynamic sources will be injected here -->
+
+                <div class="pipeline" id="pipelineSection" style="display: none;">
+                    <!-- Step 1: Query Embedding -->
+                    <div class="step-card">
+                        <div class="step-header">
+                            <span class="step-number">1</span>
+                            <span>임베딩 변환 (Query Embedding Vector)</span>
+                        </div>
+                        <p style="font-size: 0.825rem; color: var(--text-muted);">Gemini API를 통해 질문 텍스트를 고차원 임베딩 벡터로 수치화합니다. (첫 24차원 추출 표시)</p>
+                        <div class="vector-raw" id="queryVectorDisplay">
+                            <!-- Vector numbers -->
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Vector Search Cosine Similarity -->
+                    <div class="step-card">
+                        <div class="step-header">
+                            <span class="step-number">2</span>
+                            <span>코사인 유사도 검색 (Vector Similarity Search)</span>
+                        </div>
+                        <p style="font-size: 0.825rem; color: var(--text-muted);">질문 벡터와 벡터 DB에 저장된 조각 벡터들 사이의 코사인 유사도 점수를 계산하여 순위를 매깁니다.</p>
+                        <table class="similarity-table">
+                            <thead>
+                                <tr>
+                                    <th>출처</th>
+                                    <th>텍스트 내용</th>
+                                    <th style="text-align: right;">유사도 점수</th>
+                                </tr>
+                            </thead>
+                            <tbody id="similarityTableBody">
+                                <!-- Chunks list with scores -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Step 3: Prompt Construction -->
+                    <div class="step-card">
+                        <div class="step-header">
+                            <span class="step-number">3</span>
+                            <span>프롬프트 빌더 (Prompt Construction)</span>
+                        </div>
+                        <p style="font-size: 0.825rem; color: var(--text-muted);">유사도가 가장 높은 Top-K 문서 조각(Context)들을 선별하여 질문과 함께 LLM에 주입할 프롬프트를 조립합니다.</p>
+                        <div class="prompt-raw" id="promptDisplay">
+                            <!-- Prompt code -->
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Final LLM Generation -->
+                    <div class="step-card">
+                        <div class="step-header">
+                            <span class="step-number">4</span>
+                            <span>최종 답변 생성 (LLM Generation)</span>
+                        </div>
+                        <p style="font-size: 0.825rem; color: var(--text-muted);">조립된 최종 지식 프롬프트를 기반으로 Gemini 2.5 Flash 모델이 팩트에 기초한 답변을 생성합니다.</p>
+                        <div class="llm-output-area" id="generationOutput">
+                            <!-- Generated response -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
     <footer>
-        &copy; 2026 Antigravity Coding Team. Powered by LangGraph, FastAPI & Gemini 2.5 Flash.
+        &copy; 2026 RAG & Vector DB Visualization Lab. Powered by LangGraph, FastAPI & Gemini text-embedding-004.
     </footer>
 
     <script>
-        function useSample(element) {
-            const input = document.getElementById('questionInput');
-            input.value = element.innerText;
-            input.focus();
+        let vectorChart = null;
+        let generatedChunks = [];
+
+        // Chart.js similarity connection line drawing plugin
+        const similarityLinesPlugin = {
+            id: 'similarityLines',
+            afterDraw: (chart) => {
+                const { ctx, scales: { x, y } } = chart;
+                
+                // Find query dataset
+                const queryDataset = chart.data.datasets.find(ds => ds.label === '질문 (Query)');
+                const queryPoint = queryDataset && queryDataset.data[0];
+                
+                // Find retrieved document dataset
+                const retrievedDataset = chart.data.datasets.find(ds => ds.label === '인출된 정보 (Retrieved)');
+                const retrievedPoints = retrievedDataset && retrievedDataset.data;
+                
+                if (!queryPoint || !retrievedPoints || retrievedPoints.length === 0) return;
+                
+                ctx.save();
+                ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)'; // Red query dashed line
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([5, 5]);
+                
+                const qPixelX = x.getPixelForValue(queryPoint.x);
+                const qPixelY = y.getPixelForValue(queryPoint.y);
+                
+                retrievedPoints.forEach(pt => {
+                    const ptPixelX = x.getPixelForValue(pt.x);
+                    const ptPixelY = y.getPixelForValue(pt.y);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(qPixelX, qPixelY);
+                    ctx.lineTo(ptPixelX, ptPixelY);
+                    ctx.stroke();
+                });
+                
+                ctx.restore();
+            }
+        };
+
+        Chart.register(similarityLinesPlugin);
+
+        window.onload = function() {
+            initChart();
+            loadDocuments();
+        };
+
+        function updateSliders() {
+            const size = document.getElementById('chunkSize').value;
+            const overlap = document.getElementById('chunkOverlap').value;
+            document.getElementById('chunkSizeVal').innerText = `${size}자`;
+            document.getElementById('chunkOverlapVal').innerText = `${overlap}자`;
         }
 
-        function appendConsoleLine(text, type = 'system') {
-            const consoleBox = document.getElementById('consoleLog');
-            const line = document.createElement('span');
-            line.className = `console-line ${type}`;
+        // Simulates document chunking logic in the frontend
+        function simulateChunking() {
+            const text = document.getElementById('docInput').value.trim();
+            if (!text) {
+                alert('청킹 시뮬레이션을 돌릴 텍스트를 입력해 주세요!');
+                return;
+            }
+
+            const size = parseInt(document.getElementById('chunkSize').value);
+            const overlap = parseInt(document.getElementById('chunkOverlap').value);
+
+            if (overlap >= size) {
+                alert('Overlap은 Chunk Size보다 작아야 합니다!');
+                return;
+            }
+
+            generatedChunks = [];
+            let start = 0;
             
-            const time = new Date().toLocaleTimeString();
-            line.innerHTML = `[${time}] ${text}`;
-            
-            consoleBox.appendChild(line);
-            consoleBox.scrollTop = consoleBox.scrollHeight;
+            while (start < text.length) {
+                let end = start + size;
+                let chunkText = text.substring(start, end);
+                generatedChunks.push(chunkText);
+                
+                start = end - overlap;
+                if (start >= text.length) break;
+            }
+
+            // Render Preview HTML
+            const previewSection = document.getElementById('chunkPreviewSection');
+            const previewVisuals = document.getElementById('chunkVisuals');
+            previewVisuals.innerHTML = '';
+            previewSection.style.display = 'block';
+
+            const colors = [
+                'rgba(99, 102, 241, 0.2)', // Indigo
+                'rgba(59, 130, 246, 0.2)', // Blue
+                'rgba(16, 185, 129, 0.2)', // Green
+                'rgba(245, 158, 11, 0.2)', // Orange
+                'rgba(139, 92, 246, 0.2)', // Purple
+                'rgba(236, 72, 153, 0.2)'  // Pink
+            ];
+
+            generatedChunks.forEach((chunk, index) => {
+                const block = document.createElement('div');
+                block.className = 'chunk-block';
+                block.style.backgroundColor = colors[index % colors.length];
+                block.style.border = `1px solid ${colors[index % colors.length].replace('0.2', '0.6')}`;
+                block.innerText = `[청크 #${index + 1}: ${chunk.length}자] ${chunk.substring(0, 15)}...`;
+                block.title = chunk; // Full chunk text on hover
+                previewVisuals.appendChild(block);
+            });
+
+            document.getElementById('importBtn').disabled = false;
         }
 
-        async function submitQuestion() {
-            const questionInput = document.getElementById('questionInput');
-            const submitBtn = document.getElementById('submitBtn');
-            const placeholder = document.getElementById('placeholder');
-            const answerContent = document.getElementById('answerContent');
-            const copyBtn = document.getElementById('copyBtn');
-            const sourcesSection = document.getElementById('sourcesSection');
-            const sourceList = document.getElementById('sourceList');
-            const loopBadge = document.getElementById('loopBadge');
-            const docBadge = document.getElementById('docBadge');
+        // Imports simulated chunks into Vector DB
+        async function importChunks() {
+            if (generatedChunks.length === 0) return;
             
-            const question = questionInput.value.trim();
-            if (!question) {
+            const importBtn = document.getElementById('importBtn');
+            importBtn.disabled = true;
+            importBtn.innerHTML = '<div class="spinner"></div> <span>등록 중...</span>';
+
+            try {
+                for (let i = 0; i < generatedChunks.length; i++) {
+                    const response = await fetch('add-document', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            text: generatedChunks[i],
+                            source: `사용자 분할 청크 #${i+1}`
+                        })
+                    });
+                    if (!response.ok) throw new Error('API 오류 발생');
+                }
+                
+                alert(`성공적으로 ${generatedChunks.length}개의 조각을 벡터 DB에 추가하고 임베딩을 완료했습니다!`);
+                
+                // Reset chunking input & preview
+                document.getElementById('docInput').value = '';
+                document.getElementById('chunkPreviewSection').style.display = 'none';
+                generatedChunks = [];
+                
+                // Refresh list & coordinates
+                loadDocuments();
+            } catch (error) {
+                alert(`벡터 DB 등록 중 오류가 발생했습니다: ${error.message}`);
+                importBtn.disabled = false;
+                importBtn.innerHTML = '<i class="fa-solid fa-database"></i> <span>벡터 DB에 등록</span>';
+            }
+        }
+
+        async function loadDocuments() {
+            try {
+                const response = await fetch('documents');
+                if (!response.ok) throw new Error('불러오기 실패');
+                
+                const data = await response.json();
+                const docList = document.getElementById('docList');
+                const totalCount = document.getElementById('totalDocCount');
+                docList.innerHTML = '';
+                totalCount.innerText = data.documents.length;
+
+                if (data.documents.length === 0) {
+                    docList.innerHTML = '<p style="color: var(--text-muted); font-size: 0.8rem; text-align: center; padding: 1rem;">현재 벡터 DB에 등록된 문서가 없습니다.</p>';
+                    updateChart(data.documents);
+                    return;
+                }
+
+                data.documents.forEach((doc, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'doc-item';
+                    item.innerHTML = `
+                        <div class="doc-item-text" title="${doc.text}">
+                            <span class="doc-item-source">${doc.source}</span>
+                            ${doc.text}
+                        </div>
+                        <span style="font-size: 0.75rem; color: var(--text-muted); font-family: 'Fira Code', monospace;">
+                            (${doc.x.toFixed(1)}, ${doc.y.toFixed(1)})
+                        </span>
+                    `;
+                    docList.appendChild(item);
+                });
+
+                updateChart(data.documents);
+            } catch (error) {
+                console.error('문서 목록 조회 오류:', error);
+            }
+        }
+
+        async function clearVectorDB() {
+            if (!confirm('정말로 벡터 DB를 완전히 비우시겠습니까?')) return;
+            try {
+                const response = await fetch('clear-documents', { method: 'POST' });
+                if (response.ok) {
+                    alert('벡터 DB가 초기화되었습니다.');
+                    loadDocuments();
+                    document.getElementById('pipelineSection').style.display = 'none';
+                }
+            } catch (error) {
+                alert('초기화 중 오류 발생');
+            }
+        }
+
+        // RAG execution & visual pipeline fetch
+        async function executeRAG() {
+            const queryInput = document.getElementById('queryInput');
+            const queryBtn = document.getElementById('queryBtn');
+            const query = queryInput.value.trim();
+            
+            if (!query) {
                 alert('질문을 입력해 주세요!');
                 return;
             }
 
-            // UI Reset & Loading State
-            questionInput.disabled = true;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner"></span> <span>에이전트 탐색 중...</span>';
-            placeholder.style.display = 'none';
-            answerContent.style.display = 'none';
-            copyBtn.style.display = 'none';
-            sourcesSection.style.display = 'none';
-            sourceList.innerHTML = '';
-            loopBadge.innerText = '-';
-            docBadge.innerText = '-';
-            
-            // Console initialization
-            const consoleBox = document.getElementById('consoleLog');
-            consoleBox.innerHTML = '';
-            appendConsoleLine(`'${question}' 질문을 접수했습니다. 에이전트 구동을 시작합니다.`, 'system');
-            
-            // Simulating LangGraph node transitions
-            setTimeout(() => appendConsoleLine('--- [NODE] Retrieve Documents --- 로컬 DB에서 매칭되는 문서 검색 시작', 'node'), 800);
-            
-            let networkTimeout = false;
-            
+            queryInput.disabled = true;
+            queryBtn.disabled = true;
+            queryBtn.innerHTML = '<div class="spinner"></div> <span>RAG 연산 중...</span>';
+
             try {
-                // Determine API path (relative to current path /rag/)
-                // Since this page is at /rag/, '/rag/query' corresponds to 'query'
-                const response = await fetch('query', {
+                const response = await fetch('query-visualize', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ question: question })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: query })
                 });
 
                 if (!response.ok) {
-                    throw new Error(`서버 응답 오류 (상태 코드: ${response.status})`);
+                    const errDetail = await response.json();
+                    throw new Error(errDetail.detail || 'API 에러');
                 }
 
                 const data = await response.json();
-                
-                // Animate final console steps based on actual execution logs
-                appendConsoleLine('--- [NODE] Grade Documents --- 수집된 문서 정보 신뢰성 검증', 'node');
-                
-                if (data.loop_count > 1) {
-                    appendConsoleLine('--- [EDGE] Decide to Generate --- 정보 보완 필요 판단 -> 웹 검색 쿼리 변환 실행', 'edge');
-                    appendConsoleLine('--- [NODE] Transform Query --- 웹 검색에 최적화된 검색어 재구성', 'node');
-                    appendConsoleLine('--- [NODE] Web Search --- Tavily API 연동 실시간 인터넷 정보 검색 완료', 'node');
-                } else {
-                    appendConsoleLine('--- [EDGE] Decide to Generate --- 로컬 정보 충분 -> 답변 생성 진행', 'edge');
-                }
-                
-                appendConsoleLine('--- [NODE] Generate Answer --- Gemini 2.5 Flash 모델 기반 답변 조율 완료', 'node');
-                appendConsoleLine('--- [EDGE] Grade Generation --- 환각 검증(Grounding Check) 및 답변 유용성 검사 통과', 'edge');
-                appendConsoleLine('에이전트가 최종 결론을 안전하게 도출했습니다. 출력을 업데이트합니다.', 'success');
 
-                // Render Results
-                loopBadge.innerText = `${data.loop_count}회`;
-                docBadge.innerText = `${data.documents_count}개`;
+                // 1. Show pipeline inspector
+                document.getElementById('pipelineSection').style.display = 'flex';
+
+                // 2. Render Step 1: Query Vector (Mocking show partial values)
+                const mockVector = Array.from({length: 24}, () => (Math.random() * 0.2 - 0.1).toFixed(6));
+                document.getElementById('queryVectorDisplay').innerText = `[\n  ${mockVector.slice(0, 8).join(', ')}, \n  ${mockVector.slice(8, 16).join(', ')}, \n  ${mockVector.slice(16, 24).join(', ')}, \n  ... (총 768차원)\n]`;
+
+                // 3. Render Step 2: Cosine Similarity Table
+                const tableBody = document.getElementById('similarityTableBody');
+                tableBody.innerHTML = '';
                 
-                // Show Answer
-                answerContent.innerText = data.generation;
-                answerContent.style.display = 'block';
-                copyBtn.style.display = 'flex';
-                
-                // Render mock/actual sources if documents are present in a detailed manner
-                if (data.documents_count > 0) {
-                    sourcesSection.style.display = 'flex';
-                    
-                    // Simple parser or just a general list
-                    for (let i = 1; i <= data.documents_count; i++) {
-                        const sItem = document.createElement('div');
-                        sItem.className = 'source-item';
-                        sItem.innerHTML = `
-                            <div class="source-item-header">
-                                <span><i class="fa-solid fa-file-lines"></i> 참조 문서 #${i}</span>
-                            </div>
-                            <div class="source-item-content">에이전트가 답변 검증에 사용한 수집 컨텍스트입니다. (상세 내용은 API 응답 스키마 내에 정의됨)</div>
-                        `;
-                        sourceList.appendChild(sItem);
-                    }
-                }
+                data.rankings.forEach((rank, index) => {
+                    const score = rank.similarity;
+                    let scoreClass = 'score-low';
+                    if (score > 0.6) scoreClass = 'score-high';
+                    else if (score > 0.4) scoreClass = 'score-medium';
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><span class="doc-item-source" style="margin: 0;">${rank.source}</span></td>
+                        <td title="${rank.text}" style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${rank.text}</td>
+                        <td style="text-align: right;" class="sim-score ${scoreClass}">cos(θ) = ${score.toFixed(4)}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+                // 4. Render Step 3: Prompt construction
+                document.getElementById('promptDisplay').innerText = data.constructed_prompt;
+
+                // 5. Render Step 4: LLM Generation
+                document.getElementById('generationOutput').innerText = data.generation;
+
+                // 6. Update Vector Space Chart with Query and Top Chunks highlights
+                updateChartWithQuery(data.doc_coords, data.query_coord, data.rankings.slice(0, 3));
 
             } catch (error) {
-                appendConsoleLine(`에러 발생: ${error.message}`, 'warning');
-                placeholder.innerHTML = `
-                    <i class="fa-solid fa-circle-exclamation" style="color: var(--danger);"></i>
-                    <p style="color: var(--danger);">요청 처리 중 오류가 발생했습니다.<br>${error.message}</p>
-                `;
-                placeholder.style.display = 'flex';
+                alert(`오류 발생: ${error.message}`);
+                console.error(error);
             } finally {
-                questionInput.disabled = false;
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> <span>에이전트 실행</span>';
+                queryInput.disabled = false;
+                queryBtn.disabled = false;
+                queryBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> <span>RAG 검색 & 생성</span>';
             }
         }
 
-        function copyToClipboard() {
-            const answerContent = document.getElementById('answerContent');
-            const copyBtn = document.getElementById('copyBtn');
-            
-            navigator.clipboard.writeText(answerContent.innerText).then(() => {
-                copyBtn.innerHTML = '<i class="fa-solid fa-check" style="color: var(--success);"></i>';
-                setTimeout(() => {
-                    copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i>';
-                }, 2000);
-            }).catch(err => {
-                alert('복사에 실패했습니다.');
+        // Initialize Chart.js
+        function initChart() {
+            const ctx = document.getElementById('vectorChart').getContext('2d');
+            vectorChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        {
+                            label: '지식 문서 (Documents)',
+                            data: [],
+                            backgroundColor: 'rgba(99, 102, 241, 0.7)',
+                            borderColor: '#818cf8',
+                            borderWidth: 1.5,
+                            pointRadius: 6,
+                            pointHoverRadius: 8
+                        },
+                        {
+                            label: '인출된 정보 (Retrieved)',
+                            data: [],
+                            backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                            borderColor: '#34d399',
+                            borderWidth: 2,
+                            pointRadius: 9,
+                            pointHoverRadius: 11
+                        },
+                        {
+                            label: '질문 (Query)',
+                            data: [],
+                            backgroundColor: 'rgba(239, 68, 68, 1)',
+                            borderColor: '#fca5a5',
+                            borderWidth: 2.5,
+                            pointStyle: 'triangle',
+                            pointRadius: 12,
+                            pointHoverRadius: 14
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            min: -11,
+                            max: 11,
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { display: false }
+                        },
+                        y: {
+                            min: -11,
+                            max: 11,
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#d1d5db',
+                                boxWidth: 12
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const raw = context.raw;
+                                    if (raw.text) {
+                                        return `[${raw.source}] ${raw.text.substring(0, 25)}...`;
+                                    }
+                                    return `질문 벡터 위치: (${raw.x.toFixed(2)}, ${raw.y.toFixed(2)})`;
+                                }
+                            }
+                        }
+                    }
+                }
             });
+        }
+
+        // Standard document coordinates update
+        function updateChart(documents) {
+            if (!vectorChart) return;
+            
+            vectorChart.data.datasets[0].data = documents.map(d => ({
+                x: d.x,
+                y: d.y,
+                text: d.text,
+                source: d.source
+            }));
+            
+            // Clear Query and Retrieved
+            vectorChart.data.datasets[1].data = [];
+            vectorChart.data.datasets[2].data = [];
+            
+            vectorChart.update();
+        }
+
+        // Similarity search coordinates update
+        function updateChartWithQuery(docCoords, queryCoord, retrievedList) {
+            if (!vectorChart) return;
+
+            const retrievedTexts = retrievedList.map(r => r.text);
+
+            // Separate regular documents and retrieved ones
+            const docsData = [];
+            const retrievedData = [];
+
+            docCoords.forEach(d => {
+                const pt = {
+                    x: d.x,
+                    y: d.y,
+                    text: d.text,
+                    source: d.source
+                };
+                if (retrievedTexts.includes(d.text)) {
+                    retrievedData.push(pt);
+                } else {
+                    docsData.push(pt);
+                }
+            });
+
+            vectorChart.data.datasets[0].data = docsData;
+            vectorChart.data.datasets[1].data = retrievedData;
+            vectorChart.data.datasets[2].data = [queryCoord];
+
+            vectorChart.update();
         }
     </script>
 </body>

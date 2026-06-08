@@ -3,6 +3,7 @@ import requests
 from dotenv import load_dotenv
 from .state import AgentState
 from .chains import doc_grader_chain, generator_chain, query_rewriter_chain
+from .vector_db import vdb
 
 load_dotenv()
 
@@ -50,19 +51,14 @@ def retrieve(state: AgentState) -> dict:
     print("\n--- [NODE] Retrieve Documents ---")
     question = state["question"]
     
-    retrieved_docs = []
-    question_words = set(question.lower().split())
+    # 동적 벡터 DB에서 유사도 검색 수행 (Top-3)
+    search_results, _ = vdb.similarity_search(question, k=3)
+    retrieved_docs = [r["text"] for r in search_results] if search_results else []
     
-    for doc in LOCAL_DOCUMENTS:
-        doc_content_lower = doc["content"].lower()
-        match_count = sum(1 for word in question_words if word in doc_content_lower)
-        if match_count > 0:
-            retrieved_docs.append(doc["content"])
-            
     if not retrieved_docs:
-        print("로컬 DB에서 직접 매칭되는 문서를 찾지 못했습니다.")
+        print("벡터 DB에서 매칭되는 문서를 찾지 못했습니다.")
         
-    print(f"로컬 RAG 검색 완료: {len(retrieved_docs)}개 문서 검색됨.")
+    print(f"벡터 DB 검색 완료: {len(retrieved_docs)}개 문서 검색됨.")
     return {"documents": retrieved_docs, "question": question, "loop_count": state.get("loop_count", 0)}
 
 
