@@ -391,33 +391,37 @@
             box-shadow: 0 4px 12px rgba(220, 38, 38, 0.08);
         }
 
-        /* Chunking Visualizer */
         .chunk-visualizer {
             background: #f8fafc;
             border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 1rem;
             font-size: 0.9rem;
-            max-height: 220px;
+            max-height: 240px;
             overflow-y: auto;
             display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
+            flex-direction: column;
+            gap: 0.65rem;
         }
 
         .chunk-block {
-            padding: 0.35rem 0.65rem;
-            border-radius: 6px;
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
             color: #1e293b;
             font-weight: 600;
-            display: inline-block;
-            font-size: 0.8rem;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            font-size: 0.85rem;
             cursor: help;
-            transition: transform 0.2s ease;
+            transition: all 0.2s ease;
         }
 
         .chunk-block:hover {
-            transform: scale(1.02);
+            transform: translateX(4px);
         }
 
         /* Two Column Layout (Step 3 & 4) */
