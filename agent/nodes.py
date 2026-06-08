@@ -1,4 +1,5 @@
 import os
+import time
 import requests
 from dotenv import load_dotenv
 from .state import AgentState
@@ -6,6 +7,18 @@ from .chains import doc_grader_chain, generator_chain, query_rewriter_chain
 from .vector_db import vdb
 
 load_dotenv()
+
+def invoke_with_retry(chain, inputs, max_retries=3, delay=1.0):
+    for attempt in range(max_retries):
+        try:
+            return chain.invoke(inputs)
+        except Exception as e:
+            if attempt < max_retries - 1:
+                print(f"[LLM API Warning] Attempt {attempt + 1} failed: {str(e)}. Retrying in {delay}s...")
+                time.sleep(delay)
+                delay *= 2
+            else:
+                raise e
 
 # 임시 로컬 문서 데이터베이스 (RAG retrieve용)
 LOCAL_DOCUMENTS = [
@@ -78,7 +91,7 @@ def grade_documents(state: AgentState) -> dict:
         return {"documents": [], "search_needed": True}
         
     for doc in documents:
-        response = doc_grader_chain.invoke({"question": question, "document": doc})
+        response = invoke_with_retry(doc_grader_chain, {"question": question, "document": doc})
         score = response.binary_score.lower().strip()
         
         if score == "yes":
@@ -104,7 +117,7 @@ def transform_query(state: AgentState) -> dict:
     print("\n--- [NODE] Transform Query (Query Rewrite) ---")
     question = state["question"]
     
-    rewritten_query = query_rewriter_chain.invoke({"question": question})
+    rewritten_query = invoke_with_retry(query_rewriter_chain, {"question": question})
     query_text = get_message_content(rewritten_query).strip()
     
     print(f"원본 질문: '{question}'")
@@ -164,7 +177,7 @@ def generate(state: AgentState) -> dict:
     
     context = "\n\n".join(documents) if documents else "제공된 정보 없음."
     
-    generation_response = generator_chain.invoke({"context": context, "question": question})
+    generation_response = invoke_with_retry(generator_chain, {"context": context, "question": question})
     generation = get_message_content(generation_response).strip()
     
     print("답변 생성 완료.")

@@ -1,9 +1,22 @@
 import os
+import time
 import numpy as np
 from dotenv import load_dotenv
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 load_dotenv()
+
+def embed_query_with_retry(embeddings_model, text, max_retries=3, delay=1.0):
+    for attempt in range(max_retries):
+        try:
+            return embeddings_model.embed_query(text)
+        except Exception as e:
+            if attempt < max_retries - 1:
+                print(f"[VectorDB API Warning] Attempt {attempt + 1} failed: {str(e)}. Retrying in {delay}s...")
+                time.sleep(delay)
+                delay *= 2
+            else:
+                raise e
 
 class MemoryVectorDB:
     def __init__(self):
@@ -18,8 +31,8 @@ class MemoryVectorDB:
     def add_document(self, text: str, source: str = "User Upload"):
         if not text.strip():
             return None
-        # 임베딩 벡터 생성
-        vector = self.embeddings_model.embed_query(text)
+        # 임베딩 벡터 생성 (재시도 로직 포함)
+        vector = embed_query_with_retry(self.embeddings_model, text)
         doc = {
             "text": text,
             "source": source,
@@ -35,8 +48,8 @@ class MemoryVectorDB:
         if not self.documents:
             return [], None
         
-        # 질문 임베딩 생성
-        query_vector = np.array(self.embeddings_model.embed_query(query))
+        # 질문 임베딩 생성 (재시도 로직 포함)
+        query_vector = np.array(embed_query_with_retry(self.embeddings_model, query))
         
         results = []
         for doc in self.documents:
