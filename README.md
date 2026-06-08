@@ -67,8 +67,10 @@ TAVILY_API_KEY=your_tavily_api_key_here
 # 컨테이너 빌드 및 백그라운드 구동
 docker compose up -d --build
 ```
-*   **웹 UI 접속**: `http://localhost:8000/`
-*   **대화형 API 문서 (Swagger)**: `http://localhost:8000/docs`
+*   **실시간 서비스 웹 UI 접속**: [https://injun-cloud.duckdns.org/rag/](https://injun-cloud.duckdns.org/rag/)
+*   **실시간 서비스 API 문서**: [https://injun-cloud.duckdns.org/rag/docs](https://injun-cloud.duckdns.org/rag/docs)
+*   **로컬 웹 UI 접속**: `http://localhost:8000/`
+*   **로컬 API 문서 (Swagger)**: `http://localhost:8000/docs`
 
 ### 3. 로컬 가상환경에서 실행
 ```bash
@@ -89,9 +91,11 @@ python app.py
 
 *   `app.py`: FastAPI 웹 서버 엔트리포인트 및 static UI 렌더링 라우터
 *   `main.py`: LangGraph 워크플로우 구성 및 로컬 CLI 테스터
-*   `nodes.py`: 에이전트 그래프를 구성하는 각 노드 함수 구현체
-*   `chains.py`: 문서 평가, 질문 재구성, 답변 생성, 검증에 사용되는 LLM 체인 정의
-*   `state.py`: 그래프 노드 간 상태를 저장하고 넘겨주는 `AgentState` 정의
+*   `agent/`: 에이전트 핵심 로직 패키지
+    *   `__init__.py`: 패키지 초기화 파일
+    *   `state.py`: 그래프 노드 간 상태를 저장하고 넘겨주는 `AgentState` 정의
+    *   `nodes.py`: 에이전트 그래프를 구성하는 각 노드 함수 구현체
+    *   `chains.py`: 문서 평가, 질문 재구성, 답변 생성, 검증에 사용되는 LLM 체인 정의
 *   `templates/index.html`: 에이전트 상호작용 및 생각 흐름 시각화를 위한 Web UI 템플릿
 *   `Dockerfile` / `docker-compose.yml`: 컨테이너 빌드 및 서비스 오케스트레이션 구성 파일
 *   `report.md`: 프로젝트 최종 보고서 (한양대학교)

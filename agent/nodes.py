@@ -1,8 +1,8 @@
 import os
 import requests
 from dotenv import load_dotenv
-from state import AgentState
-from chains import doc_grader_chain, generator_chain, query_rewriter_chain
+from .state import AgentState
+from .chains import doc_grader_chain, generator_chain, query_rewriter_chain
 
 load_dotenv()
 
