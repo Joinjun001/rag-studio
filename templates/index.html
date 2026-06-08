@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAG & Vector DB Visualization Lab</title>
+    <title>RAG Studio - RAG & Vector DB Visualization Lab</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,19 +15,19 @@
     
     <style>
         :root {
-            --bg-primary: #080B16;
-            --bg-secondary: #0f162e;
-            --accent-primary: #6366f1;
-            --accent-secondary: #3b82f6;
-            --accent-glow: rgba(99, 102, 241, 0.15);
-            --text-main: #f3f4f6;
-            --text-muted: #9ca3af;
-            --border-color: rgba(255, 255, 255, 0.08);
-            --card-bg: rgba(15, 23, 42, 0.7);
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --purple: #8b5cf6;
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --accent-primary: #4f46e5;
+            --accent-secondary: #2563eb;
+            --accent-glow: rgba(79, 70, 229, 0.08);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --card-bg: #ffffff;
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --purple: #7c3aec;
         }
 
         * {
@@ -41,8 +41,8 @@
         body {
             background-color: var(--bg-primary);
             background-image: 
-                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 45%),
-                radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 45%);
+                radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.04) 0%, transparent 45%),
+                radial-gradient(circle at 90% 80%, rgba(124, 58, 237, 0.04) 0%, transparent 45%);
             color: var(--text-main);
             min-height: 100vh;
             display: flex;
@@ -56,7 +56,7 @@
             align-items: center;
             padding: 1.25rem 2rem;
             border-bottom: 1px solid var(--border-color);
-            background: rgba(8, 11, 22, 0.85);
+            background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
             position: sticky;
             top: 0;
@@ -69,7 +69,7 @@
             gap: 0.75rem;
             font-size: 1.5rem;
             font-weight: 700;
-            background: linear-gradient(135deg, #c7d2fe, #86b9ff);
+            background: linear-gradient(135deg, #1e1b4b, #4338ca);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -82,13 +82,13 @@
         }
 
         .badge {
-            background: rgba(99, 102, 241, 0.1);
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            color: #a5b4fc;
+            background: rgba(79, 70, 229, 0.06);
+            border: 1px solid rgba(79, 70, 229, 0.2);
+            color: var(--accent-primary);
             padding: 0.35rem 0.75rem;
             border-radius: 9999px;
             font-size: 0.8rem;
-            font-weight: 500;
+            font-weight: 600;
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -105,55 +105,196 @@
             animation: pulse-green 2s infinite;
         }
 
-        main {
-            flex: 1;
-            max-width: 1400px;
+        /* Wizard Progress Bar */
+        .wizard-bar {
+            max-width: 1200px;
             width: 100%;
-            margin: 2rem auto;
+            margin: 2rem auto 0 auto;
             padding: 0 1.5rem;
-            display: grid;
-            grid-template-columns: 380px 1fr;
-            gap: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
         }
 
-        @media (max-width: 1100px) {
-            main {
-                grid-template-columns: 1fr;
+        .wizard-step {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .wizard-step.active {
+            border-color: var(--accent-primary);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.08);
+            background: rgba(79, 70, 229, 0.02);
+        }
+
+        .wizard-step.completed {
+            border-color: var(--success);
+            background: rgba(5, 150, 105, 0.02);
+        }
+
+        .wizard-step .num {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .wizard-step.active .num {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .wizard-step.completed .num {
+            background: var(--success);
+            color: white;
+        }
+
+        .wizard-step .label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+        }
+
+        .wizard-step.active .label {
+            color: var(--text-main);
+        }
+
+        .wizard-step.completed .label {
+            color: var(--success);
+        }
+
+        .wizard-arrow {
+            color: #cbd5e1;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .wizard-bar {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .wizard-arrow {
+                display: none;
+            }
+            .wizard-step {
+                width: 100%;
             }
         }
 
+        /* Step containers */
+        main {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .step-container {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out forwards;
+        }
+
+        .step-container.active-step {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .section-title {
-            font-size: 1.15rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
             color: var(--text-main);
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.6rem;
         }
 
         .card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 16px;
-            padding: 1.5rem;
-            backdrop-filter: blur(16px);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+            padding: 2rem;
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
             display: flex;
             flex-direction: column;
-            gap: 1.25rem;
+            gap: 1.5rem;
+        }
+
+        /* Step 1: Drag & Drop upload style */
+        .upload-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 3.5rem 2rem;
+            text-align: center;
+            background: #fafafa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accent-primary);
+            background: rgba(79, 70, 229, 0.02);
+        }
+
+        .upload-zone i {
+            font-size: 3rem;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+        }
+
+        .upload-zone:hover i {
+            color: var(--accent-primary);
+            transform: translateY(-4px);
+        }
+
+        .upload-zone p {
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .upload-zone span {
+            font-size: 0.8rem;
+            color: #94a3b8;
         }
 
         /* Forms & Controls */
         .input-group {
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 0.6rem;
         }
 
         label {
-            font-size: 0.85rem;
-            font-weight: 500;
+            font-size: 0.875rem;
+            font-weight: 600;
             color: var(--text-muted);
             display: flex;
             justify-content: space-between;
@@ -161,28 +302,29 @@
 
         label span.val {
             color: var(--accent-primary);
-            font-weight: 600;
+            font-weight: 700;
         }
 
         textarea, input[type="text"] {
             width: 100%;
-            background: rgba(3, 7, 18, 0.7);
+            background: #f8fafc;
             border: 1px solid var(--border-color);
             border-radius: 10px;
-            padding: 0.75rem;
+            padding: 0.85rem;
             color: var(--text-main);
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             transition: all 0.3s ease;
         }
 
         textarea {
-            min-height: 100px;
+            min-height: 120px;
             resize: vertical;
         }
 
         textarea:focus, input[type="text"]:focus {
             outline: none;
             border-color: var(--accent-primary);
+            background: #ffffff;
             box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
@@ -190,60 +332,73 @@
             width: 100%;
             accent-color: var(--accent-primary);
             cursor: pointer;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 9999px;
         }
 
         .btn {
             background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             color: white;
             border: none;
-            padding: 0.75rem 1.25rem;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.9rem;
+            padding: 0.85rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.95rem;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
         }
 
         .btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.25);
+        }
+
+        .btn:disabled {
+            background: #cbd5e1;
+            box-shadow: none;
+            cursor: not-allowed;
+            color: #94a3b8;
         }
 
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.05);
+            background: #f1f5f9;
             border: 1px solid var(--border-color);
             color: var(--text-main);
+            box-shadow: none;
         }
 
         .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-            box-shadow: none;
+            background: #e2e8f0;
             transform: none;
+            box-shadow: none;
         }
 
         .btn-danger {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #fca5a5;
+            background: rgba(220, 38, 38, 0.06);
+            border: 1px solid rgba(220, 38, 38, 0.2);
+            color: var(--danger);
+            box-shadow: none;
         }
 
         .btn-danger:hover {
-            background: rgba(239, 68, 68, 0.2);
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+            background: rgba(220, 38, 38, 0.12);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.08);
         }
 
-        /* Chunking visual representation */
+        /* Chunking Visualizer */
         .chunk-visualizer {
-            background: rgba(3, 7, 18, 0.5);
+            background: #f8fafc;
             border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 0.75rem;
-            font-size: 0.85rem;
-            max-height: 180px;
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 0.9rem;
+            max-height: 220px;
             overflow-y: auto;
             display: flex;
             flex-wrap: wrap;
@@ -251,38 +406,103 @@
         }
 
         .chunk-block {
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            color: white;
-            font-weight: 500;
+            padding: 0.35rem 0.65rem;
+            border-radius: 6px;
+            color: #1e293b;
+            font-weight: 600;
             display: inline-block;
             font-size: 0.8rem;
             cursor: help;
+            transition: transform 0.2s ease;
         }
 
-        /* Vector Space Chart Card */
+        .chunk-block:hover {
+            transform: scale(1.02);
+        }
+
+        /* Two Column Layout (Step 3 & 4) */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 450px 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .grid-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Chart container styling */
         .chart-container {
             position: relative;
-            height: 380px;
+            height: 480px;
             width: 100%;
-            background: rgba(3, 7, 18, 0.4);
+            background: #ffffff;
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 1rem;
+            padding: 1.25rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);
         }
 
-        /* RAG Flow Pipeline Inspector */
+        /* Document list */
+        .doc-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .doc-item {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .doc-item:hover {
+            border-color: #cbd5e1;
+        }
+
+        .doc-item-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 250px;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .doc-item-source {
+            font-size: 0.75rem;
+            background: rgba(79, 70, 229, 0.08);
+            color: var(--accent-primary);
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+        /* Step 4 Pipeline Inspector styling */
         .pipeline {
             display: grid;
             grid-template-columns: 1fr;
             gap: 1.5rem;
+            margin-top: 2rem;
         }
 
         .step-card {
-            background: rgba(15, 23, 42, 0.4);
+            background: var(--card-bg);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1.25rem;
+            border-radius: 14px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
             display: flex;
             flex-direction: column;
             gap: 0.75rem;
@@ -291,74 +511,74 @@
         .step-header {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #a5b4fc;
+            gap: 0.6rem;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-main);
             border-bottom: 1px solid var(--border-color);
-            padding-bottom: 0.5rem;
+            padding-bottom: 0.75rem;
         }
 
         .step-number {
             background: var(--accent-primary);
             color: white;
-            width: 20px;
-            height: 20px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 700;
         }
 
-        /* Code/Vector blocks */
         .vector-raw {
             font-family: 'Fira Code', monospace;
-            font-size: 0.75rem;
-            background: #020617;
-            padding: 0.75rem;
-            border-radius: 8px;
+            font-size: 0.8rem;
+            background: #0f172a;
+            padding: 1rem;
+            border-radius: 10px;
             color: #34d399;
             overflow-x: auto;
-            max-height: 80px;
+            max-height: 90px;
             white-space: pre-wrap;
-            border: 1px solid rgba(16, 185, 129, 0.1);
+            border: 1px solid #1e293b;
         }
 
         .prompt-raw {
             font-family: 'Fira Code', monospace;
-            font-size: 0.8rem;
-            background: #020617;
-            padding: 0.75rem;
-            border-radius: 8px;
-            color: #93c5fd;
+            font-size: 0.85rem;
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 10px;
+            color: #1e293b;
             overflow-y: auto;
-            max-height: 120px;
+            max-height: 160px;
             white-space: pre-wrap;
-            border: 1px solid rgba(59, 130, 246, 0.1);
-            line-height: 1.4;
+            border: 1px solid var(--border-color);
+            line-height: 1.5;
         }
 
         /* Similarity Table */
         .similarity-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             text-align: left;
         }
 
         .similarity-table th, .similarity-table td {
-            padding: 0.5rem;
+            padding: 0.75rem 0.5rem;
             border-bottom: 1px solid var(--border-color);
         }
 
         .similarity-table th {
             color: var(--text-muted);
-            font-weight: 500;
+            font-weight: 600;
         }
 
         .similarity-table td.sim-score {
-            font-weight: 600;
+            font-weight: 700;
             font-family: 'Fira Code', monospace;
         }
 
@@ -366,68 +586,16 @@
         .score-medium { color: var(--warning); }
         .score-low { color: var(--text-muted); }
 
-        /* Documents List view */
-        .doc-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        .doc-item {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 0.6rem 0.75rem;
-            font-size: 0.8rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .doc-item-text {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            max-width: 260px;
-        }
-
-        .doc-item-source {
-            font-size: 0.7rem;
-            background: rgba(99, 102, 241, 0.1);
-            color: #a5b4fc;
-            padding: 0.15rem 0.4rem;
-            border-radius: 4px;
-            margin-right: 0.5rem;
-        }
-
-        /* Animations */
-        @keyframes pulse-green {
-            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-            70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-        }
-
         .llm-output-area {
-            background: rgba(99, 102, 241, 0.03);
-            border: 1px solid rgba(99, 102, 241, 0.15);
+            background: rgba(79, 70, 229, 0.02);
+            border: 1px dashed rgba(79, 70, 229, 0.3);
             border-radius: 10px;
-            padding: 1rem;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            color: #e5e7eb;
+            padding: 1.25rem;
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--text-main);
             min-height: 80px;
-        }
-
-        .flex-row {
-            display: flex;
-            gap: 1rem;
-            width: 100%;
-        }
-
-        .flex-row > * {
-            flex: 1;
+            font-weight: 500;
         }
 
         /* Spinner for loading */
@@ -437,22 +605,38 @@
             justify-content: center;
             gap: 0.5rem;
             color: var(--accent-primary);
-            font-weight: 500;
-            font-size: 0.9rem;
+            font-weight: 600;
+            font-size: 0.95rem;
         }
 
         .spinner {
-            border: 2.5px solid rgba(99, 102, 241, 0.1);
-            border-top: 2.5px solid var(--accent-primary);
+            border: 3px solid rgba(79, 70, 229, 0.1);
+            border-top: 3px solid var(--accent-primary);
             border-radius: 50%;
-            width: 16px;
-            height: 16px;
+            width: 20px;
+            height: 20px;
             animation: spin 1s linear infinite;
         }
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.4); }
+            70% { box-shadow: 0 0 0 8px rgba(5, 150, 105, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            background: #ffffff;
+            margin-top: auto;
         }
     </style>
 </head>
@@ -461,162 +645,210 @@
     <header>
         <div class="logo">
             <i class="fa-solid fa-graduation-cap"></i>
-            <span>RAG & Vector DB Visualization Lab</span>
+            <span>RAG Studio</span>
         </div>
         <div class="badge">
             Gemini 임베딩 & PCA 엔진 활성화
         </div>
     </header>
 
+    <!-- Wizard Steps navigation -->
+    <div class="wizard-bar">
+        <div class="wizard-step active" id="wiz-1">
+            <span class="num">1</span>
+            <span class="label">파일 업로드</span>
+        </div>
+        <div class="wizard-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+        <div class="wizard-step" id="wiz-2">
+            <span class="num">2</span>
+            <span class="label">청킹 (분할)</span>
+        </div>
+        <div class="wizard-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+        <div class="wizard-step" id="wiz-3">
+            <span class="num">3</span>
+            <span class="label">임베딩 (벡터화)</span>
+        </div>
+        <div class="wizard-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+        <div class="wizard-step" id="wiz-4">
+            <span class="num">4</span>
+            <span class="label">검색 및 답변</span>
+        </div>
+    </div>
+
     <main>
-        <!-- Left Column: Chunking & Doc adding -->
-        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-            <!-- Document Input and Chunking controls -->
+        <!-- STEP 1: Upload (문서 업로드) -->
+        <div id="step-1" class="step-container active-step">
             <div class="card">
                 <div class="section-title">
                     <i class="fa-solid fa-file-arrow-up" style="color: var(--accent-primary);"></i>
-                    <span>지식 추가 & 청킹 실습 (Chunking)</span>
+                    <span>지식 파일 업로드 (Step 1)</span>
+                </div>
+                <p style="font-size: 0.95rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1rem;">
+                    RAG 학습에 사용할 로컬 파일을 선택해 주세요. 원본 문서를 청크로 쪼개어 다차원 벡터 DB에 등록하는 실습을 진행합니다.
+                </p>
+                <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <p>이곳을 클릭하거나 파일(.txt, .md)을 끌어서 업로드하세요</p>
+                    <span>텍스트 파일 형태만 지원합니다.</span>
+                </div>
+                <input type="file" id="fileInput" accept=".txt,.md" style="display: none;" onchange="handleFileUpload(event)">
+            </div>
+        </div>
+
+        <!-- STEP 2: Chunking (문서 청킹 실습) -->
+        <div id="step-2" class="step-container">
+            <div class="card">
+                <div class="section-title">
+                    <i class="fa-solid fa-scissors" style="color: var(--accent-primary);"></i>
+                    <span>지식 분할 및 청킹 (Step 2)</span>
                 </div>
                 
                 <div class="input-group">
-                    <label style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                        <span>원래 서류 내용 (Text / Document)</span>
-                        <span style="color: #818cf8; cursor: pointer; display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; font-weight: 600;" onclick="document.getElementById('fileInput').click()">
-                            <i class="fa-solid fa-paperclip"></i> 파일 선택 (.txt, .md)
-                        </span>
-                    </label>
-                    <input type="file" id="fileInput" accept=".txt,.md" style="display: none;" onchange="handleFileUpload(event)">
-                    <textarea id="docInput" placeholder="여기에 학습시킬 문서를 입력하거나 파일을 업로드/복사해 주세요..." oninput="simulateChunking()"></textarea>
+                    <label>업로드된 텍스트 본문 (Read-Only Preview)</label>
+                    <textarea id="docInput" readonly placeholder="파일 내용이 표시됩니다..."></textarea>
                 </div>
 
-                <div class="flex-row">
-                    <div class="input-group">
+                <div class="flex-row" style="display: flex; gap: 1.5rem; width: 100%;">
+                    <div class="input-group" style="flex: 1;">
                         <label>Chunk Size <span class="val" id="chunkSizeVal">150자</span></label>
                         <input type="range" id="chunkSize" min="50" max="500" step="50" value="150" oninput="updateSliders(); simulateChunking()">
                     </div>
-                    <div class="input-group">
+                    <div class="input-group" style="flex: 1;">
                         <label>Chunk Overlap <span class="val" id="chunkOverlapVal">20자</span></label>
                         <input type="range" id="chunkOverlap" min="0" max="250" step="10" value="20" oninput="updateSliders(); simulateChunking()">
                     </div>
                 </div>
 
-                <div class="flex-row">
-                    <button class="btn" id="importBtn" onclick="importChunks()" disabled style="width: 100%;">
-                        <i class="fa-solid fa-database"></i>
-                        <span>벡터 DB에 등록</span>
-                    </button>
-                </div>
-
-                <!-- Color coded chunk blocks preview -->
+                <!-- Color coded chunks preview -->
                 <div class="input-group" id="chunkPreviewSection" style="display: none;">
-                    <label>분할된 텍스트 청크 시각화 (Chunks)</label>
+                    <label>분할된 청크 조각들 실시간 시각화 (Chunks)</label>
                     <div id="chunkVisuals" class="chunk-visualizer">
-                        <!-- Color-coded chunks will be displayed here -->
+                        <!-- Color coded blocks -->
                     </div>
                 </div>
-            </div>
 
-            <!-- Vector DB Document List -->
-            <div class="card">
-                <div class="section-title" style="justify-content: space-between;">
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fa-solid fa-server" style="color: var(--accent-secondary);"></i>
-                        <span>등록된 문서 조각 (<span id="totalDocCount">0</span>)</span>
-                    </div>
-                    <button class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="clearVectorDB()">
-                        <i class="fa-solid fa-trash-can"></i> 전체 비우기
+                <div class="flex-row" style="display: flex; gap: 1rem; width: 100%; margin-top: 1rem;">
+                    <button class="btn btn-secondary" onclick="resetToStep(1)" style="flex: 1;">
+                        <i class="fa-solid fa-arrow-left"></i> 처음으로 돌아가기
                     </button>
-                </div>
-                <div class="doc-list" id="docList">
-                    <!-- Added documents will be displayed here -->
+                    <button class="btn" id="importBtn" onclick="importChunks()" disabled style="flex: 2;">
+                        <i class="fa-solid fa-database"></i> 벡터 DB에 등록 및 임베딩 생성
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Right Column: Interactive Vector space & RAG Pipeline Flow -->
-        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-            <!-- Interactive 2D Coordinate Space -->
-            <div class="card" style="padding: 1.25rem;">
-                <div class="section-title" style="margin-bottom: 0.5rem;">
-                    <i class="fa-solid fa-circle-nodes" style="color: var(--purple);"></i>
-                    <span>2차원 벡터 스페이스 투영 (Vector Space Visualization - PCA)</span>
+        <!-- STEP 3 & 4: Embedding & Retrieval / Generation (2D Vector space) -->
+        <div id="step-3-4" class="step-container">
+            <div class="grid-layout">
+                <!-- Left panel controls -->
+                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <!-- Registered Chunks card -->
+                    <div class="card" style="padding: 1.5rem;">
+                        <div class="section-title" style="justify-content: space-between; margin-bottom: 0.75rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fa-solid fa-server" style="color: var(--accent-secondary);"></i>
+                                <span>등록된 청크 조각 (<span id="totalDocCount">0</span>개)</span>
+                            </div>
+                            <button class="btn btn-danger" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; box-shadow: none;" onclick="clearVectorDB()">
+                                <i class="fa-solid fa-trash-can"></i> DB 비우기
+                            </button>
+                        </div>
+                        <div class="doc-list" id="docList">
+                            <!-- Chunks list -->
+                        </div>
+                    </div>
+
+                    <!-- Ask RAG card -->
+                    <div class="card" style="padding: 1.5rem;">
+                        <div class="section-title">
+                            <i class="fa-regular fa-compass" style="color: var(--success);"></i>
+                            <span>RAG 질문하기 (Query)</span>
+                        </div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; margin-top: -0.5rem;">
+                            벡터 DB에 보관된 정보에 맞추어 질문을 해보세요. 유사도가 높은 정보들이 자동으로 인출됩니다.
+                        </p>
+                        <div class="input-group" style="margin-top: 0.5rem;">
+                            <input type="text" id="queryInput" placeholder="이곳에 궁금한 내용을 적어보세요..." onkeydown="if(event.key === 'Enter') executeRAG()">
+                        </div>
+                        <button class="btn" onclick="executeRAG()" id="queryBtn" style="width: 100%; margin-top: 0.5rem;">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <span>RAG 검색 & 생성</span>
+                        </button>
+                    </div>
                 </div>
-                <div class="chart-container">
-                    <canvas id="vectorChart"></canvas>
+
+                <!-- Right panel chart -->
+                <div class="card" style="padding: 1.5rem;">
+                    <div class="section-title">
+                        <i class="fa-solid fa-circle-nodes" style="color: var(--purple);"></i>
+                        <span>2차원 벡터 스페이스 투영 (Vector Space Visualization - PCA)</span>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; margin-top: -0.75rem;">
+                        Gemini 임베딩이 만든 다차원 정보를 SVD 압축하여 2차원 공간 상에 좌표화한 상태입니다.
+                    </p>
+                    <div class="chart-container">
+                        <canvas id="vectorChart"></canvas>
+                    </div>
                 </div>
             </div>
 
-            <!-- RAG Query & Pipeline -->
-            <div class="card">
-                <div class="section-title">
-                    <i class="fa-regular fa-compass" style="color: var(--success);"></i>
-                    <span>질문 검색 및 RAG 파이프라인 검사 (Pipeline Inspector)</span>
+            <!-- STEP 4 Pipeline Inspector (Appends below Step 3 grid when query run) -->
+            <div class="pipeline" id="pipelineSection" style="display: none;">
+                <!-- Step 1: Query Embedding -->
+                <div class="step-card">
+                    <div class="step-header">
+                        <span class="step-number">1</span>
+                        <span>임베딩 변환 (Query Embedding Vector)</span>
+                    </div>
+                    <p style="font-size: 0.875rem; color: var(--text-muted);">Gemini Embedding API를 통해 사용자의 질문을 고차원 수치 벡터로 바꿉니다. (첫 24차원 표시)</p>
+                    <div class="vector-raw" id="queryVectorDisplay">
+                        <!-- Vector output -->
+                    </div>
                 </div>
 
-                <div class="input-group" style="flex-direction: row; gap: 0.75rem; align-items: center;">
-                    <input type="text" id="queryInput" placeholder="등록된 지식에 대해 에이전트에게 물어보세요..." style="flex: 1;" onkeydown="if(event.key === 'Enter') executeRAG()">
-                    <button class="btn" style="padding: 0.75rem 1.5rem;" onclick="executeRAG()" id="queryBtn">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                        <span>RAG 검색 & 생성</span>
-                    </button>
+                <!-- Step 2: Cosine Similarity Table -->
+                <div class="step-card">
+                    <div class="step-header">
+                        <span class="step-number">2</span>
+                        <span>코사인 유사도 검색 (Vector Similarity Search)</span>
+                    </div>
+                    <p style="font-size: 0.875rem; color: var(--text-muted);">질문 벡터와 DB에 등록된 청크 벡터 간의 내적 코사인 코사인 거리를 매칭해 순위를 냅니다.</p>
+                    <table class="similarity-table">
+                        <thead>
+                            <tr>
+                                <th>출처</th>
+                                <th>텍스트 내용</th>
+                                <th style="text-align: right;">유사도 점수</th>
+                            </tr>
+                        </thead>
+                        <tbody id="similarityTableBody">
+                            <!-- Ranked chunks list -->
+                        </tbody>
+                    </table>
                 </div>
 
-                <div class="pipeline" id="pipelineSection" style="display: none;">
-                    <!-- Step 1: Query Embedding -->
-                    <div class="step-card">
-                        <div class="step-header">
-                            <span class="step-number">1</span>
-                            <span>임베딩 변환 (Query Embedding Vector)</span>
-                        </div>
-                        <p style="font-size: 0.825rem; color: var(--text-muted);">Gemini API를 통해 질문 텍스트를 고차원 임베딩 벡터로 수치화합니다. (첫 24차원 추출 표시)</p>
-                        <div class="vector-raw" id="queryVectorDisplay">
-                            <!-- Vector numbers -->
-                        </div>
+                <!-- Step 3: Prompt Construction -->
+                <div class="step-card">
+                    <div class="step-header">
+                        <span class="step-number">3</span>
+                        <span>프롬프트 조립기 (Prompt Builder)</span>
                     </div>
-
-                    <!-- Step 2: Vector Search Cosine Similarity -->
-                    <div class="step-card">
-                        <div class="step-header">
-                            <span class="step-number">2</span>
-                            <span>코사인 유사도 검색 (Vector Similarity Search)</span>
-                        </div>
-                        <p style="font-size: 0.825rem; color: var(--text-muted);">질문 벡터와 벡터 DB에 저장된 조각 벡터들 사이의 코사인 유사도 점수를 계산하여 순위를 매깁니다.</p>
-                        <table class="similarity-table">
-                            <thead>
-                                <tr>
-                                    <th>출처</th>
-                                    <th>텍스트 내용</th>
-                                    <th style="text-align: right;">유사도 점수</th>
-                                </tr>
-                            </thead>
-                            <tbody id="similarityTableBody">
-                                <!-- Chunks list with scores -->
-                            </tbody>
-                        </table>
+                    <p style="font-size: 0.875rem; color: var(--text-muted);">인출된 핵심 조각(Context)들을 질문 본문과 결합하여 LLM에 전달할 최종 시스템 프롬프트를 구성합니다.</p>
+                    <div class="prompt-raw" id="promptDisplay">
+                        <!-- Constructed Prompt -->
                     </div>
+                </div>
 
-                    <!-- Step 3: Prompt Construction -->
-                    <div class="step-card">
-                        <div class="step-header">
-                            <span class="step-number">3</span>
-                            <span>프롬프트 빌더 (Prompt Construction)</span>
-                        </div>
-                        <p style="font-size: 0.825rem; color: var(--text-muted);">유사도가 가장 높은 Top-K 문서 조각(Context)들을 선별하여 질문과 함께 LLM에 주입할 프롬프트를 조립합니다.</p>
-                        <div class="prompt-raw" id="promptDisplay">
-                            <!-- Prompt code -->
-                        </div>
+                <!-- Step 4: Final LLM Generation -->
+                <div class="step-card">
+                    <div class="step-header">
+                        <span class="step-number">4</span>
+                        <span>최종 답변 생성 (LLM Generation)</span>
                     </div>
-
-                    <!-- Step 4: Final LLM Generation -->
-                    <div class="step-card">
-                        <div class="step-header">
-                            <span class="step-number">4</span>
-                            <span>최종 답변 생성 (LLM Generation)</span>
-                        </div>
-                        <p style="font-size: 0.825rem; color: var(--text-muted);">조립된 최종 지식 프롬프트를 기반으로 Gemini 2.5 Flash 모델이 팩트에 기초한 답변을 생성합니다.</p>
-                        <div class="llm-output-area" id="generationOutput">
-                            <!-- Generated response -->
-                        </div>
+                    <p style="font-size: 0.875rem; color: var(--text-muted);">신뢰할 수 있도록 구성된 최종 프롬프트를 기반으로 LangGraph 에이전트가 오직 본문에 입각한 팩트 답변을 냅니다.</p>
+                    <div class="llm-output-area" id="generationOutput">
+                        <!-- Output answer -->
                     </div>
                 </div>
             </div>
@@ -624,12 +856,13 @@
     </main>
 
     <footer>
-        &copy; 2026 RAG & Vector DB Visualization Lab. Powered by LangGraph, FastAPI & Gemini text-embedding-004.
+        &copy; 2026 RAG Studio. Powered by LangGraph, FastAPI & Gemini Embedding.
     </footer>
 
     <script>
         let vectorChart = null;
         let generatedChunks = [];
+        let currentStep = 1;
 
         // Chart.js similarity connection line drawing plugin
         const similarityLinesPlugin = {
@@ -677,6 +910,49 @@
             updateSliders();
         };
 
+        // Step navigation logic
+        function resetToStep(step) {
+            currentStep = step;
+            
+            // Toggle active step containers
+            document.querySelectorAll('.step-container').forEach(el => el.classList.remove('active-step'));
+            
+            // Map step value to container IDs
+            if (step === 1) {
+                document.getElementById('step-1').classList.add('active-step');
+            } else if (step === 2) {
+                document.getElementById('step-2').classList.add('active-step');
+            } else if (step === 3 || step === 4) {
+                document.getElementById('step-3-4').classList.add('active-step');
+            }
+
+            // Update wizard active states
+            document.querySelectorAll('.wizard-step').forEach((el, idx) => {
+                const stepNum = idx + 1;
+                el.className = 'wizard-step'; // reset
+                if (stepNum === step) {
+                    el.classList.add('active');
+                } else if (stepNum < step) {
+                    el.classList.add('completed');
+                }
+            });
+
+            // Adjust elements on reset
+            if (step === 1) {
+                document.getElementById('docInput').value = '';
+                document.getElementById('chunkPreviewSection').style.display = 'none';
+                generatedChunks = [];
+            }
+            if (step < 4) {
+                document.getElementById('pipelineSection').style.display = 'none';
+                if (vectorChart) {
+                    vectorChart.data.datasets[1].data = [];
+                    vectorChart.data.datasets[2].data = [];
+                    vectorChart.update();
+                }
+            }
+        }
+
         function updateSliders() {
             const size = document.getElementById('chunkSize').value;
             const overlap = document.getElementById('chunkOverlap').value;
@@ -684,6 +960,7 @@
             document.getElementById('chunkOverlapVal').innerText = `${overlap}자`;
         }
 
+        // File upload event handler
         function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -691,12 +968,13 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 document.getElementById('docInput').value = e.target.result;
+                resetToStep(2); // Automatically advance to Step 2
                 simulateChunking();
             };
             reader.readAsText(file);
         }
 
-        // Simulates document chunking logic in the frontend
+        // Frontend chunking simulator (runs dynamically)
         function simulateChunking() {
             const text = document.getElementById('docInput').value.trim();
             if (!text) {
@@ -709,6 +987,7 @@
             let size = parseInt(document.getElementById('chunkSize').value);
             let overlap = parseInt(document.getElementById('chunkOverlap').value);
 
+            // Bounds check overlap
             if (overlap >= size) {
                 overlap = size - 10;
                 if (overlap < 0) overlap = 0;
@@ -728,41 +1007,41 @@
                 if (start >= text.length) break;
             }
 
-            // Render Preview HTML
+            // Render color-coded preview blocks
             const previewSection = document.getElementById('chunkPreviewSection');
             const previewVisuals = document.getElementById('chunkVisuals');
             previewVisuals.innerHTML = '';
             previewSection.style.display = 'block';
 
             const colors = [
-                'rgba(99, 102, 241, 0.2)', // Indigo
-                'rgba(59, 130, 246, 0.2)', // Blue
-                'rgba(16, 185, 129, 0.2)', // Green
-                'rgba(245, 158, 11, 0.2)', // Orange
-                'rgba(139, 92, 246, 0.2)', // Purple
-                'rgba(236, 72, 153, 0.2)'  // Pink
+                'rgba(79, 70, 229, 0.12)',  // Indigo
+                'rgba(37, 99, 235, 0.12)',  // Blue
+                'rgba(5, 150, 105, 0.12)',  // Green
+                'rgba(217, 119, 6, 0.12)',  // Orange
+                'rgba(124, 58, 237, 0.12)', // Purple
+                'rgba(219, 39, 119, 0.12)'  // Pink
             ];
 
             generatedChunks.forEach((chunk, index) => {
                 const block = document.createElement('div');
                 block.className = 'chunk-block';
                 block.style.backgroundColor = colors[index % colors.length];
-                block.style.border = `1px solid ${colors[index % colors.length].replace('0.2', '0.6')}`;
+                block.style.border = `1px solid ${colors[index % colors.length].replace('0.12', '0.4')}`;
                 block.innerText = `[청크 #${index + 1}: ${chunk.length}자] ${chunk.substring(0, 15)}...`;
-                block.title = chunk; // Full chunk text on hover
+                block.title = chunk;
                 previewVisuals.appendChild(block);
             });
 
             document.getElementById('importBtn').disabled = false;
         }
 
-        // Imports simulated chunks into Vector DB
+        // Imports chunks to Backend Vector DB
         async function importChunks() {
             if (generatedChunks.length === 0) return;
             
             const importBtn = document.getElementById('importBtn');
             importBtn.disabled = true;
-            importBtn.innerHTML = '<div class="spinner"></div> <span>등록 중...</span>';
+            importBtn.innerHTML = '<div class="spinner"></div> <span>벡터 생성 및 적재 중...</span>';
 
             try {
                 for (let i = 0; i < generatedChunks.length; i++) {
@@ -773,28 +1052,23 @@
                         },
                         body: JSON.stringify({
                             text: generatedChunks[i],
-                            source: `사용자 분할 청크 #${i+1}`
+                            source: `업로드 청크 #${i+1}`
                         })
                     });
-                    if (!response.ok) throw new Error('API 오류 발생');
+                    if (!response.ok) throw new Error('API 임베딩 연산 실패');
                 }
                 
-                alert(`성공적으로 ${generatedChunks.length}개의 조각을 벡터 DB에 추가하고 임베딩을 완료했습니다!`);
-                
-                // Reset chunking input & preview
-                document.getElementById('docInput').value = '';
-                document.getElementById('chunkPreviewSection').style.display = 'none';
-                generatedChunks = [];
-                
-                // Refresh list & coordinates
+                alert(`성공적으로 ${generatedChunks.length}개의 조각을 임베딩하여 벡터 DB에 등록했습니다!`);
+                resetToStep(3); // Go to Step 3: Embeddings space view
                 loadDocuments();
             } catch (error) {
-                alert(`벡터 DB 등록 중 오류가 발생했습니다: ${error.message}`);
+                alert(`벡터 등록 중 오류가 발생했습니다: ${error.message}`);
                 importBtn.disabled = false;
-                importBtn.innerHTML = '<i class="fa-solid fa-database"></i> <span>벡터 DB에 등록</span>';
+                importBtn.innerHTML = '<i class="fa-solid fa-database"></i> 벡터 DB에 등록 및 임베딩 생성';
             }
         }
 
+        // Load document list from backend
         async function loadDocuments() {
             try {
                 const response = await fetch('documents');
@@ -807,8 +1081,11 @@
                 totalCount.innerText = data.documents.length;
 
                 if (data.documents.length === 0) {
-                    docList.innerHTML = '<p style="color: var(--text-muted); font-size: 0.8rem; text-align: center; padding: 1rem;">현재 벡터 DB에 등록된 문서가 없습니다.</p>';
+                    docList.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1.5rem;">등록된 청크가 없습니다. 파일을 업로드해 주세요.</p>';
                     updateChart(data.documents);
+                    
+                    // If no documents, force Step 1
+                    resetToStep(1);
                     return;
                 }
 
@@ -820,7 +1097,7 @@
                             <span class="doc-item-source">${doc.source}</span>
                             ${doc.text}
                         </div>
-                        <span style="font-size: 0.75rem; color: var(--text-muted); font-family: 'Fira Code', monospace;">
+                        <span style="font-size: 0.75rem; color: var(--text-muted); font-family: 'Fira Code', monospace; font-weight: 500;">
                             (${doc.x.toFixed(1)}, ${doc.y.toFixed(1)})
                         </span>
                     `;
@@ -829,25 +1106,25 @@
 
                 updateChart(data.documents);
             } catch (error) {
-                console.error('문서 목록 조회 오류:', error);
+                console.error('문서 로딩 중 오류:', error);
             }
         }
 
+        // Clears all documents from Vector DB
         async function clearVectorDB() {
-            if (!confirm('정말로 벡터 DB를 완전히 비우시겠습니까?')) return;
+            if (!confirm('정말로 벡터 DB를 완전히 비우시겠습니까? 처음 단계로 돌아갑니다.')) return;
             try {
                 const response = await fetch('clear-documents', { method: 'POST' });
                 if (response.ok) {
-                    alert('벡터 DB가 초기화되었습니다.');
+                    alert('벡터 DB가 성공적으로 초기화되었습니다.');
                     loadDocuments();
-                    document.getElementById('pipelineSection').style.display = 'none';
                 }
             } catch (error) {
                 alert('초기화 중 오류 발생');
             }
         }
 
-        // RAG execution & visual pipeline fetch
+        // Executes search and generation via backend
         async function executeRAG() {
             const queryInput = document.getElementById('queryInput');
             const queryBtn = document.getElementById('queryBtn');
@@ -860,7 +1137,7 @@
 
             queryInput.disabled = true;
             queryBtn.disabled = true;
-            queryBtn.innerHTML = '<div class="spinner"></div> <span>RAG 연산 중...</span>';
+            queryBtn.innerHTML = '<div class="spinner"></div> <span>RAG 파이프라인 연산 중...</span>';
 
             try {
                 const response = await fetch('query-visualize', {
@@ -876,18 +1153,19 @@
 
                 const data = await response.json();
 
-                // 1. Show pipeline inspector
+                // Move Wizard progress to Step 4
+                resetToStep(4);
                 document.getElementById('pipelineSection').style.display = 'flex';
 
-                // 2. Render Step 1: Query Vector (Mocking show partial values)
+                // Step 1: Query Vector (Generate partial display)
                 const mockVector = Array.from({length: 24}, () => (Math.random() * 0.2 - 0.1).toFixed(6));
-                document.getElementById('queryVectorDisplay').innerText = `[\n  ${mockVector.slice(0, 8).join(', ')}, \n  ${mockVector.slice(8, 16).join(', ')}, \n  ${mockVector.slice(16, 24).join(', ')}, \n  ... (총 768차원)\n]`;
+                document.getElementById('queryVectorDisplay').innerText = `[\n  ${mockVector.slice(0, 8).join(', ')}, \n  ${mockVector.slice(8, 16).join(', ')}, \n  ${mockVector.slice(16, 24).join(', ')}, \n  ... (총 3072차원 Gemini 벡터)\n]`;
 
-                // 3. Render Step 2: Cosine Similarity Table
+                // Step 2: Similarity table
                 const tableBody = document.getElementById('similarityTableBody');
                 tableBody.innerHTML = '';
                 
-                data.rankings.forEach((rank, index) => {
+                data.rankings.forEach((rank) => {
                     const score = rank.similarity;
                     let scoreClass = 'score-low';
                     if (score > 0.6) scoreClass = 'score-high';
@@ -896,24 +1174,25 @@
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td><span class="doc-item-source" style="margin: 0;">${rank.source}</span></td>
-                        <td title="${rank.text}" style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${rank.text}</td>
+                        <td title="${rank.text}" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500;">${rank.text}</td>
                         <td style="text-align: right;" class="sim-score ${scoreClass}">cos(θ) = ${score.toFixed(4)}</td>
                     `;
                     tableBody.appendChild(row);
                 });
 
-                // 4. Render Step 3: Prompt construction
+                // Step 3: Prompt Construction display
                 document.getElementById('promptDisplay').innerText = data.constructed_prompt;
 
-                // 5. Render Step 4: LLM Generation
+                // Step 4: Final output
                 document.getElementById('generationOutput').innerText = data.generation;
 
-                // 6. Update Vector Space Chart with Query and Top Chunks highlights
+                // Refresh 2D Vector Space
                 updateChartWithQuery(data.doc_coords, data.query_coord, data.rankings.slice(0, 3));
 
             } catch (error) {
-                alert(`오류 발생: ${error.message}`);
+                alert(`에러 발생: ${error.message}`);
                 console.error(error);
+                resetToStep(3); // Drop back to step 3 on fail
             } finally {
                 queryInput.disabled = false;
                 queryBtn.disabled = false;
@@ -921,7 +1200,7 @@
             }
         }
 
-        // Initialize Chart.js
+        // Initialize Light Theme Chart.js Scatter
         function initChart() {
             const ctx = document.getElementById('vectorChart').getContext('2d');
             vectorChart = new Chart(ctx, {
@@ -931,8 +1210,8 @@
                         {
                             label: '지식 문서 (Documents)',
                             data: [],
-                            backgroundColor: 'rgba(99, 102, 241, 0.7)',
-                            borderColor: '#818cf8',
+                            backgroundColor: 'rgba(79, 70, 229, 0.6)',
+                            borderColor: '#4f46e5',
                             borderWidth: 1.5,
                             pointRadius: 6,
                             pointHoverRadius: 8
@@ -940,8 +1219,8 @@
                         {
                             label: '인출된 정보 (Retrieved)',
                             data: [],
-                            backgroundColor: 'rgba(16, 185, 129, 0.8)',
-                            borderColor: '#34d399',
+                            backgroundColor: 'rgba(5, 150, 105, 0.8)',
+                            borderColor: '#059669',
                             borderWidth: 2,
                             pointRadius: 9,
                             pointHoverRadius: 11
@@ -949,9 +1228,9 @@
                         {
                             label: '질문 (Query)',
                             data: [],
-                            backgroundColor: 'rgba(239, 68, 68, 1)',
-                            borderColor: '#fca5a5',
-                            borderWidth: 2.5,
+                            backgroundColor: 'rgba(220, 38, 38, 1)',
+                            borderColor: '#ef4444',
+                            borderWidth: 2,
                             pointStyle: 'triangle',
                             pointRadius: 12,
                             pointHoverRadius: 14
@@ -965,21 +1244,22 @@
                         x: {
                             min: -11,
                             max: 11,
-                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            grid: { color: '#f1f5f9' },
                             ticks: { display: false }
                         },
                         y: {
                             min: -11,
                             max: 11,
-                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            grid: { color: '#f1f5f9' },
                             ticks: { display: false }
                         }
                     },
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#d1d5db',
-                                boxWidth: 12
+                                color: '#1e293b',
+                                boxWidth: 12,
+                                font: { weight: '600' }
                             }
                         },
                         tooltip: {
@@ -998,7 +1278,7 @@
             });
         }
 
-        // Standard document coordinates update
+        // standard chart update
         function updateChart(documents) {
             if (!vectorChart) return;
             
@@ -1009,20 +1289,17 @@
                 source: d.source
             }));
             
-            // Clear Query and Retrieved
             vectorChart.data.datasets[1].data = [];
             vectorChart.data.datasets[2].data = [];
             
             vectorChart.update();
         }
 
-        // Similarity search coordinates update
+        // search update
         function updateChartWithQuery(docCoords, queryCoord, retrievedList) {
             if (!vectorChart) return;
 
             const retrievedTexts = retrievedList.map(r => r.text);
-
-            // Separate regular documents and retrieved ones
             const docsData = [];
             const retrievedData = [];
 
