@@ -1,4 +1,4 @@
-# 📊 벡터 DB 시각화 기반의 적응형 RAG 에이전트 학습 프로젝트
+# 벡터 DB 시각화 기반의 적응형 RAG 에이전트 학습 프로젝트
 
 본 프로젝트는 **한양대학교 인공지능 에이전트 및 활용 기말 프로젝트**의 일환으로 개발된, RAG(검색 증강 생성)의 핵심 동작 원리와 벡터 데이터베이스의 개념을 시각적으로 이해하기 위한 **교육 및 학습용 RAG 시각화 프로젝트**입니다.
 
@@ -6,7 +6,7 @@
 
 ---
 
-## 🏫 프로젝트 정보
+## 프로젝트 정보
 *   **과목명**: 인공지능 에이전트 및 활용 기말 프로젝트
 *   **소속 대학**: 한양대학교 (Hanyang University)
 *   **개발자**: 조인준 (학번: 2020039507, 1인 개발)
@@ -16,10 +16,10 @@
 
 ---
 
-## 💻 주요 학습 목표 및 핵심 기능
+## 주요 목표 및 핵심 기능
 
-1.  **동적 에이전트 제어 흐름 학습 (LangGraph)**:
-    *   단순한 단방향 파이프라인 RAG가 아닌, 평가에 따라 뒤로 돌거나 웹 검색으로 분기하는 **순환형 상태 전이 그래프(Stateful Cyclic Graph)** 아키텍처의 동작 과정을 이해합니다.
+1.  **동적 에이전트 제어 흐름 구현 (LangGraph)**:
+    *   단순한 단방향 파이프라인 RAG가 아닌, 평가에 따라 뒤로 돌거나 웹 검색으로 분기하는 **순환형 상태 전이 그래프(Stateful Cyclic Graph)** 아키텍처의 동작 과정을 구현합니다.
 2.  **임베딩 및 의미론적 거리 시각화 학습 (SVD 차원 축소)**:
     *   입력 문서와 질문이 `models/gemini-embedding-001`을 거쳐 768차원 고차원 벡터로 변환되고, 이를 SVD(특이값 분해)를 통해 2차원 좌표 `(x, y)`로 압축 투영하여 Chart.js 산점도로 시각화합니다.
     *   질문 벡터와 연관 문서 벡터가 서로 가까이 배치되는 기하학적 분포 변화를 실시간으로 비교 체험합니다.
@@ -32,7 +32,7 @@
 
 ---
 
-## 📐 에이전트 제어 워크플로우
+## 에이전트 제어 워크플로우
 
 ```mermaid
 graph TD
@@ -58,7 +58,7 @@ graph TD
 
 ## 🛠️ 기술 스택 (Tech Stack)
 
-*   **LLM & Embedding**: Google Gemini 1.5 Flash (`gemini-1.5-flash`), `models/gemini-embedding-001`
+*   **LLM & Embedding**: Google Gemini 2.5 Flash (`gemini-2.5-flash`), `models/gemini-embedding-004`
 *   **Orchestration**: LangGraph, LangChain Core
 *   **Search API**: Tavily Search API
 *   **Backend**: FastAPI, Uvicorn, NumPy
@@ -134,7 +134,7 @@ python app.py
 
 ## 📉 시각화 핵심 알고리즘 (PCA / SVD)
 
-고차원 공간(768차원)에 임베딩된 문서와 질문 벡터 간 관계를 인간이 시각적으로 파악할 수 있도록, `agent/vector_db.py`의 `MemoryVectorDB`는 **SVD(특이값 분해)** 알고리즘을 사용한 차원 축소를 실시간으로 수행합니다.
+고차원 공간(3072차원)에 임베딩된 문서와 질문 벡터 간 관계를 인간이 시각적으로 파악할 수 있도록, `agent/vector_db.py`의 `MemoryVectorDB`는 **SVD(특이값 분해)** 알고리즘을 사용한 차원 축소를 실시간으로 수행합니다.
 
 ```python
 # 1. 문서 벡터와 질문 벡터를 병합하여 행렬 X를 구성합니다.
